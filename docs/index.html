@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Few-shot Task Learning via Compositional Concept Inference</title>
+<meta name="description" content="COIN learns new tasks from a few demonstrations by inferring reusable concepts and composing them. NeurIPS 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg:#fbfaf7; --ink:#1f2933; --muted:#5c6670; --rule:#e3e0d8; --card:#ffffff;
+  --accent:#546e95; --accent-soft:#789ed5; --accent-bg:#eef2f9;
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --sans:"Work Sans", "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.6; }
+a { color:var(--accent); }
+main { max-width: 920px; margin: 0 auto; padding: 0 20px 80px; }
+header { text-align:center; padding: 72px 0 24px; }
+h1 { font-family:var(--display); font-weight:600; font-size: clamp(30px, 4.6vw, 46px); line-height:1.12; margin:0 0 20px; text-wrap:balance; }
+.authors { font-size:19px; margin:0 0 6px; }
+.authors span { margin: 0 10px; white-space:nowrap; }
+.affil { color:var(--muted); margin:0 0 4px; }
+.venue { color:var(--muted); margin:0 0 22px; font-weight:500; }
+.links { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:999px; background:var(--ink); color:#fff; text-decoration:none; font-weight:500; font-size:15px; }
+.btn svg { width:16px; height:16px; fill:currentColor; }
+.btn.soon { background:#d9d6ce; color:#5c6670; cursor:default; }
+.tldr { font-family:var(--display); font-size: clamp(20px, 2.6vw, 25px); line-height:1.4; text-align:center; max-width: 780px; margin: 36px auto 10px; text-wrap:balance; }
+.tldr b { font-weight:600; color:var(--accent); }
+section { padding-top: 44px; }
+section + section { border-top: 1px solid var(--rule); margin-top: 44px; }
+h2 { font-family:var(--display); font-weight:600; font-size: 32px; line-height:1.2; margin: 0 0 8px; text-wrap:balance; }
+h3 { font-family:var(--display); font-weight:600; font-size: 24px; line-height:1.25; margin: 40px 0 8px; }
+p { margin: 0 0 14px; max-width: 70ch; }
+.lead { font-size: 18px; }
+figure { margin:0; }
+figcaption { color:var(--muted); font-size:14.5px; line-height:1.5; margin-top:8px; }
+.fig { margin: 22px 0 6px; }
+.fig img { width:100%; height:auto; display:block; border-radius:6px; }
+.fig.narrow img { max-width: 620px; margin: 0 auto; }
+.row { display:grid; grid-template-columns: 1.25fr 1fr; gap: 28px; align-items:center; margin: 22px 0 6px; }
+.row img { width:100%; height:auto; display:block; }
+@media (max-width: 720px) { .row { grid-template-columns: 1fr; } }
+.pair { display:grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items:center; max-width: 640px; margin: 0 auto; }
+.pair video { width:100%; aspect-ratio:1; display:block; border-radius:8px; background:#111; }
+.pair figcaption { text-align:center; }
+.arrow { font-size: 32px; color: var(--muted); }
+.teaser { margin-top: 28px; }
+.teaser-cap { text-align:center; color:var(--muted); font-size:15px; margin: 12px auto 0; }
+.chooser { display:flex; flex-wrap:wrap; gap:8px; margin: 18px 0 18px; }
+.chooser button { font:inherit; font-size:14px; padding:6px 12px; border-radius:999px; border:1px solid var(--rule); background:var(--card); color:var(--ink); cursor:pointer; }
+.chooser button[aria-pressed="true"] { background:var(--accent-bg); border-color:var(--accent-soft); color:var(--accent); font-weight:500; }
+.chooser button:focus-visible { outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.instruction { font-family:var(--display); font-size: 21px; text-align:center; margin: 0 0 14px; }
+.stat { display:flex; gap: 36px; flex-wrap:wrap; margin: 18px 0 6px; }
+.stat div { min-width: 140px; }
+.stat .n { font-family:var(--display); font-size: 40px; font-weight:600; line-height:1; color:var(--accent); font-variant-numeric: tabular-nums; }
+.stat .l { color:var(--muted); font-size:14.5px; margin-top:4px; max-width: 22ch; }
+pre { background:#f1efe9; border-radius:8px; padding:16px 18px; overflow-x:auto; font-size:13.5px; line-height:1.5; position:relative; }
+.copy { position:absolute; top:10px; right:10px; font:inherit; font-size:12.5px; padding:4px 10px; border-radius:6px; border:1px solid var(--rule); background:var(--card); cursor:pointer; }
+footer { color:var(--muted); font-size:14px; text-align:center; padding-top: 40px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Few-shot Task Learning via Compositional Concept Inference</h1>
+  <p class="authors"><span>Hanming Ye</span><span>Yiding Song</span><span>Yilun Du</span></p>
+  <p class="affil">Harvard University</p>
+  <p class="venue">NeurIPS 2026</p>
+  <div class="links">
+    <a class="btn" href="assets/paper.pdf"><svg viewBox="0 0 24 24"><path d="M6 2h8l6 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5L13 3.5z"/></svg>Paper</a>
+    <span class="btn soon" title="arXiv version coming soon">arXiv (soon)</span>
+    <a class="btn" href="https://github.com/DozenDucc/compositional-concept-inference"><svg viewBox="0 0 24 24"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>Code</a>
+  </div>
+</header>
+
+<p class="tldr">A robot that watches a few demonstrations, <b>infers the concepts</b> behind them, and <b>composes</b> those concepts into actions. The task representation is trained for one thing only: <b>helping the robot act</b>.</p>
+
+    <div class="pair teaser">
+      <figure><video autoplay muted loop playsinline src="assets/demo_086.mp4"></video><figcaption>One demonstration</figcaption></figure>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <figure><video autoplay muted loop playsinline src="assets/coin_fewshot_086.mp4"></video><figcaption>COIN, new starting state</figcaption></figure>
+    </div>
+    <p class="teaser-cap">&ldquo;Pick up the book in the middle and place it on the cabinet shelf&rdquo; &mdash; a task COIN was never trained on. After seeing a single demonstration, it performs the task from a new starting state.</p>
+
+<section id="idea">
+  <h2>The idea</h2>
+  <p class="lead">Humans learn a new task from a few demonstrations by inferring the concepts behind them, such as which object matters and where it should go, and recombining concepts they already know. COIN does the same. An encoder turns demonstrations into a small set of <em>concept latents</em>. A diffusion policy predicts one denoising direction per concept and adds them up, so concepts learned in separate tasks can be combined at test time. The encoder has no objective of its own: it is trained only through the policy's action loss, on demonstrations other than the one being imitated, so a latent is useful exactly to the extent that it helps the robot act.</p>
+  <figure class="fig"><img src="assets/main_method.png" alt="COIN overview: an encoder maps task demonstrations to concept latents; a diffusion policy predicts one noise term per latent and sums them; encoder and policy are trained jointly on the denoising loss."></figure>
+</section>
+
+<section id="compose">
+  <h2>Concepts compose</h2>
+  <p>Train on single relations between objects, such as &ldquo;triangle right of square&rdquo; and &ldquo;circle above square&rdquo;. At test time, show COIN one demonstration of each relation: it infers one latent per concept and adds their predictions, producing arrangements that satisfy both relations although no training task ever combined them.</p>
+  <figure class="fig"><img src="assets/composition.png" alt="Training tasks each show one spatial relation; from a new demonstration COIN infers the two relations and composes them into a new arrangement."></figure>
+  <div class="row">
+    <div>
+      <p>How the concepts are combined matters. Averaging the two latents into one conditioning vector mostly fails. Adding the two noise predictions works far better. Keeping each relation in its own latent makes composition nearly perfect, which is possible only because the encoder separated the two relations.</p>
+    </div>
+    <figure><img src="assets/chart_compose.png" alt="Success on unseen compositions: 0.33 when averaging latents, 0.70 when averaging noise predictions, 0.98 with one latent per concept."></figure>
+  </div>
+</section>
+
+<section id="bind">
+  <h2>Concepts bind</h2>
+  <p>In goal-oriented navigation, training tasks name one attribute of the target: &ldquo;go to the red object&rdquo;, &ldquo;go to the bowl&rdquo;. Held-out tasks need both at once, &ldquo;go to the red bowl&rdquo;, while a distractor shares one attribute with the target. Following either attribute alone fails. COIN infers the right binding from demonstrations and reaches the target, including from starting positions it never saw.</p>
+  <figure class="fig"><img src="assets/goal_navigation.png" alt="Goal-oriented navigation: training targets have one attribute, held-out targets two; COIN outperforms baselines on training tasks, held-out compositions, and new initial states."></figure>
+</section>
+
+<section id="libero">
+  <h2>Robot manipulation</h2>
+  <p>On the LIBERO benchmark, COIN is conditioned only on demonstrations. It receives no language instruction and no internet-scale pretraining, yet it matches large vision-language-action models with roughly seven times fewer parameters.</p>
+  <div class="stat">
+    <div><div class="n">96.6%</div><div class="l">success on LIBERO-90</div></div>
+    <div><div class="n">7&times;</div><div class="l">fewer parameters than &pi;<sub>0</sub>, which it ties</div></div>
+    <div><div class="n">0</div><div class="l">words of instruction</div></div>
+  </div>
+  <h3>Choose a task</h3>
+  <div class="chooser" id="chooser-l90" role="group" aria-label="LIBERO-90 tasks"></div>
+  <p class="instruction" id="inst-l90"></p>
+  <div class="pair">
+    <figure><video id="demo-l90" autoplay muted loop playsinline></video><figcaption>A demonstration COIN conditions on</figcaption></figure>
+    <div class="arrow" aria-hidden="true">&rarr;</div>
+    <figure><video id="coin-l90" autoplay muted loop playsinline></video><figcaption>COIN</figcaption></figure>
+  </div>
+
+  <h3>Same words, different task</h3>
+  <p>&ldquo;Put the black bowl on top of the cabinet&rdquo; appears in several kitchens with different layouts. The sentence cannot say which one is meant; a demonstration can. On the tasks whose instruction is shared with other tasks, language-conditioned policies drop sharply, and COIN does not.</p>
+  <figure class="fig narrow"><img src="assets/fig_same_prompt_scenes.png" alt="The same instruction in several different kitchen layouts."></figure>
+
+  <h3>Learning a new task from one demonstration</h3>
+  <p>Hold out ten tasks, then fine-tune on a single demonstration of each. COIN succeeds about half the time, far ahead of the same policy conditioned on language and of a fine-tuned &pi;<sub>0</sub>, and the gap is widest when demonstrations are scarcest. What transfers is the policy's knowledge of how to act; what adapts is the mapping from demonstrations to concepts.</p>
+  <div class="row">
+    <div>
+      <div class="chooser" id="chooser-fs" role="group" aria-label="Held-out tasks"></div>
+      <p class="instruction" id="inst-fs"></p>
+      <div class="pair">
+        <figure><video id="demo-fs" autoplay muted loop playsinline></video><figcaption>The one demonstration</figcaption></figure>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <figure><video id="coin-fs" autoplay muted loop playsinline></video><figcaption>COIN, new starting state</figcaption></figure>
+      </div>
+    </div>
+    <figure><img src="assets/chart_fewshot.png" alt="Success rate on held-out tasks versus demonstrations per task: COIN above a fine-tuned pi-zero and Diffusion Policy at every budget up to 25 demonstrations."></figure>
+  </div>
+
+  <h3>What makes it work</h3>
+  <p>Three ingredients are each necessary: conditioning on demonstrations rather than a label or a sentence, sampling the context demonstration independently of the trajectory being imitated so the encoder cannot simply copy it, and training the encoder only through the policy's loss rather than with an objective of its own. Remove any one and success drops.</p>
+  <figure class="fig"><img src="assets/chart_ablation.png" alt="LIBERO-90 success for COIN and for variants that each remove one component; every variant is lower."></figure>
+</section>
+
+<section id="bibtex">
+  <h2>BibTeX</h2>
+  <pre id="bib"><button class="copy" id="copybtn" type="button">Copy</button>@inproceedings{ye2026coin,
+  title     = {Few-shot Task Learning via Compositional Concept Inference},
+  author    = {Ye, Hanming and Song, Yiding and Du, Yilun},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year      = {2026}
+}</pre>
+</section>
+
+<footer>Few-shot Task Learning via Compositional Concept Inference &middot; NeurIPS 2026</footer>
+</main>
+
+<script>
+const L90 = [{"id": 0, "label": "Close the top drawer of the cabinet", "demo": "assets/demo_000.mp4", "coin": "assets/coin_l90_000.mp4"}, {"id": 9, "label": "Put the black bowl on the plate", "demo": "assets/demo_009.mp4", "coin": "assets/coin_l90_009.mp4"}, {"id": 10, "label": "Put the black bowl on top of the cabinet", "demo": "assets/demo_010.mp4", "coin": "assets/coin_l90_010.mp4"}, {"id": 18, "label": "Put the frying pan on the stove", "demo": "assets/demo_018.mp4", "coin": "assets/coin_l90_018.mp4"}, {"id": 33, "label": "Close the microwave", "demo": "assets/demo_033.mp4", "coin": "assets/coin_l90_033.mp4"}, {"id": 35, "label": "Open the microwave", "demo": "assets/demo_035.mp4", "coin": "assets/coin_l90_035.mp4"}, {"id": 39, "label": "Turn off the stove", "demo": "assets/demo_039.mp4", "coin": "assets/coin_l90_039.mp4"}, {"id": 41, "label": "Put the frying pan on top of the cabinet", "demo": "assets/demo_041.mp4", "coin": "assets/coin_l90_041.mp4"}, {"id": 47, "label": "Pick up the cream cheese box and put it in the basket", "demo": "assets/demo_047.mp4", "coin": "assets/coin_l90_047.mp4"}, {"id": 50, "label": "Pick up the alphabet soup and put it in the basket", "demo": "assets/demo_050.mp4", "coin": "assets/coin_l90_050.mp4"}, {"id": 55, "label": "Pick up the alphabet soup and put it in the tray", "demo": "assets/demo_055.mp4", "coin": "assets/coin_l90_055.mp4"}, {"id": 60, "label": "Pick up the black bowl on the left and put it in the tray", "demo": "assets/demo_060.mp4", "coin": "assets/coin_l90_060.mp4"}, {"id": 65, "label": "Put the red mug on the left plate", "demo": "assets/demo_065.mp4", "coin": "assets/coin_l90_065.mp4"}, {"id": 69, "label": "Put the chocolate pudding to the left of the plate", "demo": "assets/demo_069.mp4", "coin": "assets/coin_l90_069.mp4"}, {"id": 73, "label": "Pick up the book and place it in the front compartment of the caddy", "demo": "assets/demo_073.mp4", "coin": "assets/coin_l90_073.mp4"}];
+const FS = [{"id": 86, "label": "Pick up the book in the middle and place it on the cabinet shelf", "demo": "assets/demo_086.mp4", "coin": "assets/coin_fewshot_086.mp4"}, {"id": 80, "label": "Pick up the book and place it in the right compartment of the caddy", "demo": "assets/demo_080.mp4", "coin": "assets/coin_fewshot_080.mp4"}, {"id": 82, "label": "Pick up the book and place it in the left compartment of the caddy", "demo": "assets/demo_082.mp4", "coin": "assets/coin_fewshot_082.mp4"}, {"id": 83, "label": "Pick up the book and place it in the right compartment of the caddy", "demo": "assets/demo_083.mp4", "coin": "assets/coin_fewshot_083.mp4"}, {"id": 89, "label": "Pick up the book on the right and place it under the cabinet shelf", "demo": "assets/demo_089.mp4", "coin": "assets/coin_fewshot_089.mp4"}];
+function mount(items, key) {
+  const ch = document.getElementById('chooser-' + key);
+  const inst = document.getElementById('inst-' + key);
+  const vd = document.getElementById('demo-' + key), vc = document.getElementById('coin-' + key);
+  if (!items.length) { ch.closest('section') && (ch.parentElement.style.display = 'none'); return; }
+  function show(i) {
+    const it = items[i];
+    inst.textContent = '“' + it.label + '”';
+    vd.src = it.demo; vc.src = it.coin; vd.load(); vc.load();
+    [...ch.children].forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+  }
+  items.forEach((it, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = it.label;
+    b.addEventListener('click', () => show(i)); ch.appendChild(b);
+  });
+  show(0);
+}
+mount(L90, 'l90'); mount(FS, 'fs');
+document.getElementById('copybtn').addEventListener('click', async () => {
+  const txt = document.getElementById('bib').innerText.replace(/^Copy\s*/, '');
+  try { await navigator.clipboard.writeText(txt); document.getElementById('copybtn').textContent = 'Copied'; } catch (e) {}
+});
+</script>
+</body>
+</html>
